@@ -1,0 +1,56 @@
+<?php
+$finder = PhpCsFixer\Finder::create()
+    ->exclude([
+        'tests/Fixtures',
+        'storage/framework/views',
+        'bootstrap/cache'
+    ])
+    ->in(__DIR__)
+    ->append([__DIR__.'/php-cs-fixer'])
+;
+$config = PhpCsFixer\Config::create()
+    ->setRiskyAllowed(true)
+    ->setRules([
+        '@PHP56Migration' => true,
+        '@PHPUnit60Migration:risky' => true,
+        '@PhpCsFixer' => true,
+        '@PhpCsFixer:risky' => true,
+        'list_syntax' => ['syntax' => 'long'],
+        'declare_strict_types' => false,
+        'no_superfluous_phpdoc_tags' => false,
+        'phpdoc_no_package' => false,
+        'general_phpdoc_annotation_remove' => [
+            'annotations' => ['author'],
+        ],
+        'phpdoc_separation' => false,
+        'phpdoc_align' => [
+            'align' => 'vertical',
+        ],
+        'binary_operator_spaces' => [
+            'align_double_arrow' => true,
+            'align_equals' => true,
+        ],
+        'trailing_comma_in_multiline_array' => false,
+        'ordered_class_elements' => false,
+        'ordered_imports' => false,
+        'php_unit_method_casing' => false,
+        'php_unit_test_case_static_method_calls' => false,
+    ])
+    ->setFinder($finder)
+;
+// special handling of fabbot.io service if it's using too old PHP CS Fixer version
+if (false !== getenv('FABBOT_IO')) {
+    try {
+        PhpCsFixer\FixerFactory::create()
+            ->registerBuiltInFixers()
+            ->registerCustomFixers($config->getCustomFixers())
+            ->useRuleSet(new PhpCsFixer\RuleSet($config->getRules()));
+    } catch (PhpCsFixer\ConfigurationException\InvalidConfigurationException $e) {
+        $config->setRules([]);
+    } catch (UnexpectedValueException $e) {
+        $config->setRules([]);
+    } catch (InvalidArgumentException $e) {
+        $config->setRules([]);
+    }
+}
+return $config;
